@@ -13,7 +13,7 @@
 #  @numCells = 0
 # end
 
-#    # ?Metodo generar celula
+#    #?Metodo generar celula
 #   def generarPosicionCelula; end
 
 #   # ?Metodo para contruir nuestra poblacion de celulas
@@ -21,8 +21,6 @@
 
 #   # ?Metodo para revisar reglas del juego
 #   def reglas; end
-
-
 
 
 class RequestData
@@ -89,12 +87,79 @@ end
 class ReadMatrix
   def initialize(matrix)
     @matrix = matrix
+
+
+    @posCel1=[col,row]     #Se agregan variables de posición
+
+
+    row = 4
+    col = 1
+
+    ranterior=row-1            # Obtenemos coordenadas de los vecinos
+    rsiguiente = row+1
+    canterior=col -1
+    csiguiente= col +1
+
+    diagonalIS= matrix[ranterior,canterior]
+    superior= matrix[ranterior,col]
+    diagonlaDS= matrix[ranterior, csiguiente]
+    derecha= matrix[row,csiguiente]
+    izquierda= matrix[row, canterior]
+    diagonaII= matrix[rsiguiente,canterior]
+    abajo= matrix[rsiguiente,col]
+    diagonalDI= matrix[rsiguiente,csiguiente]
+
+    contador = 0              #Para saber cuantos vecinos tendrá
+
+#Reglas generales de la posisción de la celula en la matriz
+
+if row<=0 && col <=0   #Verifica derecha, abajo, diagonalID
+    if derecha == '*'
+        contador = contador+1
+    end
+    if abajo == '*'
+        contador = contador+1
+    end
+    if diagonalID == '*'
+        contador = contador+1
+    end
+
+    if contador <2   #Regla 1, si tiene menos de 2 vecinas, muere
+        posCel1=[col,row] = '.'
+    end
+
+    if contador >3   #Regla 2, si tiene más de 3 vecinos, muere
+        posCel1=[col,row] = '.'
+    end
+
+    if contador >1 & contador <3  #Regla 3, si tiene 2 o 3 vecinas, vive
+        posCel1=[col,row] = '*'
+    end
+
+
+
+if row<=0   #Verifica derecha, izquierda, diagonalIZ, abajo, diagonalID
+
+if col<=0   #verifica arriba, diagonalSD, derecha, diagonalID, abajo
+
+if row>=rowlimit #Verifica derecha, izquierda, diagonalSI,arriba, diagonalSD
+
+if col>=collimit #verifica arriba, diagonalSI, izquierda, diagonalID, abajo
+
+if row>= rowlimit && col>= collimit # Verifica arriba, diagonalSI, izquierda
+  
+
+#    @posCel2=[2,3]
+ #   @posCel3=[2,5]
+
   end
 
   def readMatrixUser
-    @matrix
+    @matrix[posCel1[1],posCel1[4]]
   end
 end
+
+
 
 
 
@@ -105,3 +170,5 @@ poblacion2 = CreateMatrix.new(poblacion.numColumns, poblacion.numRows).createMat
 poblacion3 = ReadMatrix.new(poblacion2).readMatrixUser()
 
 print poblacion3
+
+
