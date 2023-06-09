@@ -47,7 +47,11 @@ end
 # ?Read matrix class
 class ReadMatrix
   def initialize(matrix)
+    @coordCelMuerta= []
+    @coordCelViva = []
     @matrix = matrix
+    @matrixVacia= matrix
+
   end
 
   def printNeighbours
@@ -56,6 +60,7 @@ class ReadMatrix
     @matrix[1][4] = '*'
     @matrix[2][5] = '*'
     @matrix[2][6] = '*'
+
 
     rowlimit = 4
     collimit = 8
@@ -139,12 +144,16 @@ class ReadMatrix
             # ?Rule 1 Cualquier célula viva con menos de dos vecinos vivos muere, como si fuera por falta de población.
             # ?Rule 2 Cualquier célula viva con más de tres vecinos vivos muere, como si fuera por sobre-población.
             #muere celula
-            @matrix[row_index][col_index] = '.'
+            
+            @coordCelMuerta.push(row_index, col_index)
+            #@matrix[row_index][col_index] = '.'
+
           end
           if neighbourCount == 2 || neighbourCount == 3
             # ?Rule 3 Cualquier célula viva con dos o tres vecinos vivos sobrevive a la siguiente generación.
             #Sobrevive
-            @matrix[row_index][col_index] = '*'
+            # @matrix[row_index][col_index] = '*'
+            @coordCelViva.push(row_index, col_index)
           end
         end
 
@@ -152,7 +161,8 @@ class ReadMatrix
           # ?Rule 4 Cualquier célula muerta con vivos se convierte en una célula viva.exactamente tres vecinos
           if neighbourCount == 3
             #Celula vive
-            @matrix[row_index][col_index] = '*'
+            #@matrix[row_index][col_index] = '*'
+            @coordCelViva.push(row_index, col_index)
           end 
         end
 
@@ -162,7 +172,26 @@ class ReadMatrix
 
       end
     end
+     finalMatrix(@coordCelViva, @coordCelMuerta)
   end
+
+  def finalMatrix(coordCelViva, coordCelMuerta)
+
+    matrixVacia= Array.new(4) { Array.new(8, '.') }
+ 
+    @coordCelViva.each_slice(2) do |row_index, col_index|
+        matrixVacia[row_index][col_index] = '*'
+     end
+
+     matrixVacia.each do |row|
+        puts row.join(' ')
+        
+      end
+      print coordCelMuerta
+      print coordCelViva
+
+  end
+
 end
 
 
