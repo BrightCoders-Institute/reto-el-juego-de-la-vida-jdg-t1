@@ -32,15 +32,21 @@ class GenerateRandomPositions
   end
 
   def generateRandomPositionCell
-    randomPositionRow = 0
-    randomPositionColumn = 0
-    positions = []
-    @numberOfCells
-    for i in 1..@numberOfCells
-      randomPositionRow = rand(0..@lastPositionRow)
-      randomPositionColumn = rand(0..@lastPositionCol)
-      positions.push([randomPositionRow,randomPositionColumn])
+    allPositions = []
+  
+    # Generar todas las posibles posiciones
+    for row in 0..@lastPositionRow
+      for col in 0..@lastPositionCol
+        allPositions.push([row, col])
+      end
     end
+  
+    # Verificar si hay más posiciones requeridas que posiciones disponibles
+    numPositionsNeeded = [@numberOfCells, allPositions.size].min
+  
+    # Seleccionar de forma aleatoria las posiciones sin repetir
+    positions = allPositions.sample(numPositionsNeeded)
+  
     positions
   end
 end
@@ -60,9 +66,9 @@ end
 
 # ?Read matrix class
 class ReadMatrix
-  def initialize(positionCells)
-    # @rowLimit = rowLimit - 1
-    # @colLimit = colLimit - 1
+  def initialize(positionCells,rowLimit,colLimit)
+    @rowLimit = rowLimit.to_i
+    @colLimit = colLimit.to_i
     @positionCells = positionCells
   end
 
@@ -70,21 +76,17 @@ class ReadMatrix
     coordCelMuerta = []
     coordCelViva = []
 
-    matrix = Array.new(4) { Array.new(8,'.') }
+    matrix = Array.new(@rowLimit) { Array.new(@colLimit,'.') }
 
     #?THIS CODE IS GOOD
     @positionCells.each do |row, col|
       matrix[row][col] = '*'
     end
+    puts " "
     #?
 
-    # @matrix[1][4] = '*'
-    # @matrix[2][5] = '*'
-    # @matrix[2][6] = '*'
-
-
-    rowlimit = 4
-    collimit = 8
+    # rowlimit = 4
+    # collimit = 8
 
     #?Imprimir matriz demostrativa
     matrix.each do |row|
@@ -105,11 +107,11 @@ class ReadMatrix
           csiguiente = col_index + 1
 
           superior = matrix[ranterior][col_index] if ranterior >= 0
-          diagonalDS = matrix[ranterior][csiguiente] if ranterior >= 0 && csiguiente < collimit
-          derecha = matrix[row_index][csiguiente] if csiguiente < collimit
-          diagonalDI = matrix[rsiguiente][csiguiente] if rsiguiente < rowlimit && csiguiente < collimit
-          abajo = matrix[rsiguiente][col_index] if rsiguiente < rowlimit
-          diagonalII = matrix[rsiguiente][canterior] if rsiguiente < rowlimit && canterior >= 0
+          diagonalDS = matrix[ranterior][csiguiente] if ranterior >= 0 && csiguiente < @colLimit - 1
+          derecha = matrix[row_index][csiguiente] if csiguiente < @colLimit - 1
+          diagonalDI = matrix[rsiguiente][csiguiente] if rsiguiente < @rowLimit - 1 && csiguiente < @colLimit - 1
+          abajo = matrix[rsiguiente][col_index] if rsiguiente < @rowLimit - 1
+          diagonalII = matrix[rsiguiente][canterior] if rsiguiente < @rowLimit - 1&& canterior >= 0
           izquierda = matrix[row_index][canterior] if canterior >= 0
           diagonalIS = matrix[ranterior][canterior] if ranterior >= 0 && canterior >= 0
 
@@ -120,7 +122,7 @@ class ReadMatrix
             neighbourCount += 1 if derecha == '*'
             neighbourCount += 1 if diagonalDI == '*'
             neighbourCount += 1 if abajo == '*'
-          elsif row_index == rowlimit && col_index == collimit # Verifica arriba, diagonalSI, izquierda
+          elsif row_index == @rowLimit - 1 && col_index == @colLimit - 1  # Verifica arriba, diagonalSI, izquierda
             neighbourCount += 1 if superior == '*'
             neighbourCount += 1 if diagonalIS == '*'
             neighbourCount += 1 if izquierda == '*'
@@ -136,13 +138,13 @@ class ReadMatrix
             neighbourCount += 1 if derecha == '*'
             neighbourCount += 1 if diagonalDI == '*'
             neighbourCount += 1 if abajo == '*'
-          elsif row_index == rowlimit # Verifica derecha, izquierda, diagonalSI, arriba, diagonalSD
+          elsif row_index == @rowLimit - 1 # Verifica derecha, izquierda, diagonalSI, arriba, diagonalSD
             neighbourCount += 1 if derecha == '*'
             neighbourCount += 1 if izquierda == '*'
-            neighbourCount += 1 if diagonalSD == '*'
+            neighbourCount += 1 if diagonalDS == '*'
             neighbourCount += 1 if diagonalIS == '*'
             neighbourCount += 1 if superior == '*'
-          elsif col_index == collimit # verifica arriba, diagonalSI, izquierda, diagonalID, abajo
+          elsif col_index == @colLimit - 1  # verifica arriba, diagonalSI, izquierda, diagonalID, abajo
             neighbourCount += 1 if superior == '*'
             neighbourCount += 1 if diagonalIS == '*'
             neighbourCount += 1 if izquierda == '*'
@@ -200,15 +202,17 @@ end
 
 
 class IterateMatrix
-  def initialize(coordCelAlive,coordCelDead,emptyMatrix)
+  def initialize(coordCelAlive,coordCelDead,emptyMatrix,rowLimit,colLimit)
     @coordCelAlive = coordCelAlive
     @coordCelDead = coordCelDead
+    @rowLimit = rowLimit
+    @colLimit = colLimit
   end
 
   def iteratePoblacionCells()
     count = 0
     while @coordCelAlive
-      lastIterationMatrix = Array.new(4) { Array.new(8,'.') }
+      lastIterationMatrix = Array.new(@rowLimit) { Array.new(@colLimit,'.') }
   
       @coordCelAlive.each_slice(2) do |row_index, col_index|
         lastIterationMatrix[row_index][col_index] = '*'
@@ -216,34 +220,30 @@ class IterateMatrix
 
       if (@coordCelAlive)
         coordsCellAlive = @coordCelAlive.each_slice(2).to_a
-        readMatrixIteration = ReadMatrix.new(coordsCellAlive)
+        readMatrixIteration = ReadMatrix.new(coordsCellAlive,@rowLimit,@colLimit)
         @coordCelAlive, @coordCelDead = readMatrixIteration.getCellStatusPosition()
         count += 1
         puts("Iteration #{count}")
-        if count > 20 
-          break
-        end
+        puts " "
       end
     end
   end
 end
 
 #?Requesting the data from user
-# userAnswers = RequestData.new
-# userAnswers.requestDataFromUser()
+userAnswers = RequestData.new
+userAnswers.requestDataFromUser()
 
-# #?Generating the random position 
-# randomCellsPosition = GenerateRandomPositions.new(userAnswers.numCells,userAnswers.numRows,userAnswers.numColumns)
-# print randomCellsPosition.generateRandomPositionCell()
+#?Generating the random position 
+randomCellsPosition = GenerateRandomPositions.new(userAnswers.numCells,userAnswers.numRows,userAnswers.numColumns)
+cellsPosition = randomCellsPosition.generateRandomPositionCell()
 
-# #?Generating the empty matrix
-# generateEmptyMatrix = GenerateEmptyMatrix.new(userAnswers.numRows,userAnswers.numColumns)
-# generateEmptyMatrix.createMatrixUser() #Empty matrix generated
+#?Generating the empty matrix
+generateEmptyMatrix = GenerateEmptyMatrix.new(userAnswers.numRows,userAnswers.numColumns)
+matrixCreated = generateEmptyMatrix.createMatrixUser()
 
-#!TESTING 
-matrix = GenerateEmptyMatrix.new(4,8)
-matrixCreated = matrix.createMatrixUser()
-readMatrix = ReadMatrix.new([[1,4],[1,5],[1,6]])
+#?Reading rules and givin results
+readMatrix = ReadMatrix.new(cellsPosition,userAnswers.numRows,userAnswers.numColumns)
 aliveCellPosition, deadCellPosition = readMatrix.getCellStatusPosition()
-test1 = IterateMatrix.new(aliveCellPosition,deadCellPosition,matrixCreated)
+test1 = IterateMatrix.new(aliveCellPosition,deadCellPosition,matrixCreated,userAnswers.numRows,userAnswers.numColumns)
 test1.iteratePoblacionCells()
